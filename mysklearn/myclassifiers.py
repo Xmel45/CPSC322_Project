@@ -48,7 +48,7 @@ class MyKNeighborsClassifier:
         Notes:
             Since kNN is a lazy learning algorithm, this method just stores X_train and y_train
         """
-        self.X_train = X_train
+        self.X_train = np.array(X_train)
         self.y_train = y_train
 
     def kneighbors(self, X_test):
@@ -64,28 +64,36 @@ class MyKNeighborsClassifier:
             neighbor_indices(list of list of int): 2D list of k nearest neighbor
                 indices in X_train (parallel to distances)
         """
-        
-        distances =[]
+        X_test = np.array(X_test)
+        distances = []
         neighbor_indices = []
         
-        for iter in range(len(X_test)):
-        
-            instance_distances = []
-            instance_neighbor_indices = []
-            for x in range(len(self.X_train)):
-                neighbor = X_test[iter]
-                neighbor_distance = 0
-                for j in range(len(neighbor)):
-                    if(type(self.X_train[x][j])!=str):
-                        neighbor_distance += ((self.X_train[x][j] - neighbor[j])**2)
-                neighbor_distance = np.sqrt(neighbor_distance)
-                instance_distances.append(neighbor_distance)
+        # 1. Outer Loop: Iterate through each test instance
+        for test_instance in X_test:
+            
+            # --- Vectorized Distance Calculation ---
+            # 2. Subtract the single test instance (test_instance) from ALL training instances (self.X_train)
+            #    Shape: (N_train_samples, n_features)
+            diff = self.X_train - test_instance 
+            
+            # 3. Square the differences (element-wise)
+            #    Shape: (N_train_samples, n_features)
+            squared_diff = diff ** 2
+            
+            # 4. Sum the squared differences across the features (axis=1) to get the squared Euclidean distance
+            #    This results in a 1D array of distances: (N_train_samples,)
+            sum_of_squares = np.sum(squared_diff, axis=1)
+            
+            # 5. Take the square root to get the final Euclidean distance
+            instance_distances = np.sqrt(sum_of_squares)
 
+            sorted_indices = np.argsort(instance_distances)
+            instance_neighbor_indices = sorted_indices[:self.n_neighbors].tolist()
 
-            sorted_indices = sorted(range(len(instance_distances)), key=lambda i: instance_distances[i])
-            instance_neighbor_indices = sorted_indices[:self.n_neighbors]
-            distances.append(instance_distances)
+            k_distances = instance_distances[instance_neighbor_indices].tolist()
+            distances.append(k_distances)
             neighbor_indices.append(instance_neighbor_indices)
+            
         return distances, neighbor_indices 
 
     def predict(self, X_test):

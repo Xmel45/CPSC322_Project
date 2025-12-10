@@ -25,23 +25,20 @@ class NaiveBayesClassifier:
 
         self.num_idx = numeric_idx if numeric_idx else []
         self.cat_idx = categorical_idx if categorical_idx else []
-
         # Prepare storage
         self.num_mean = np.zeros((n_classes, len(self.num_idx)))
         self.num_var = np.zeros((n_classes, len(self.num_idx)))
         self.cat_prob = [{} for _ in range(n_classes)]
         self.priors = np.zeros(n_classes)
-
         for i, c in enumerate(self.classes):
             X_c = X[y == c]
             self.priors[i] = X_c.shape[0] / n_samples
-
-            # Numeric features (Gaussian)
+            # Numeric features 
             if self.num_idx:
                 self.num_mean[i, :] = X_c[:, self.num_idx].mean(axis=0)
                 self.num_var[i, :] = X_c[:, self.num_idx].var(axis=0) + 1e-9  # prevent div by 0
 
-            # Categorical features (assume already integer-encoded or one-hot)
+            # Categorical features 
             for j in self.cat_idx:
                 vals, counts = np.unique(X_c[:, j], return_counts=True)
                 total = X_c.shape[0]
@@ -49,21 +46,18 @@ class NaiveBayesClassifier:
                 self.cat_prob[i][j] = {v: (count / total) for v, count in zip(vals, counts)}
 
     def _gaussian_prob(self, x, mean, var):
-        # Gaussian probability density function
+        # Gaussian probability calculator
         return (1.0 / np.sqrt(2 * np.pi * var)) * np.exp(- (x - mean) ** 2 / (2 * var))
 
     def _predict_single(self, x):
         posteriors = []
 
         for i, c in enumerate(self.classes):
-            # Start with prior
             posterior = np.log(self.priors[i])
-
             # Numeric features
             if self.num_idx:
                 probs = self._gaussian_prob(x[self.num_idx], self.num_mean[i], self.num_var[i])
                 posterior += np.sum(np.log(probs))
-
             # Categorical features
             for j in self.cat_idx:
                 val = x[j]
@@ -83,15 +77,12 @@ class OneHotEncoder:
     def __init__(self):
         self.categories_ = []
         self.mapping_ = {}
-
     def fit(self, data):
-        """Learn unique categories and create a mapping."""
         self.categories_ = sorted(set(data))  # sort to keep order consistent
         self.mapping_ = {cat: i for i, cat in enumerate(self.categories_)}
         return self
 
     def transform(self, data):
-        """Convert data into one-hot encoded NumPy array."""
         one_hot = np.zeros((len(data), len(self.categories_)), dtype=int)
         for idx, value in enumerate(data):
             if value not in self.mapping_:
@@ -100,7 +91,6 @@ class OneHotEncoder:
         return one_hot
 
     def fit_transform(self, data):
-        """Fit and transform in one step."""
         self.fit(data)
         return self.transform(data)
 

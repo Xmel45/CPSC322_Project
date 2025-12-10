@@ -1,6 +1,6 @@
 from mysklearn.mypytable import MyPyTable 
 from mysklearn import myevaluation
-
+import matplotlib.pyplot as plt
 """
 Programmer: Xavier Melancon
 Class: CPSC 322-01 Fall 2025
@@ -74,6 +74,7 @@ def scores(X,y,classifier,folds):
 
             # Prediction and Accuracy
             y_pred = classifier.predict(X_test)
+            print(y_pred,y_test)
             f = myevaluation.binary_f1_score(y_test,y_pred,pos_label='yes')
             prec = myevaluation.binary_precision_score(y_test,y_pred,pos_label='yes')
             rec = myevaluation.binary_recall_score(y_test,y_pred,pos_label='yes')
@@ -84,6 +85,37 @@ def scores(X,y,classifier,folds):
             accs.append(acc)
             all_y_test.extend(y_test)
             all_y_pred.extend(y_pred)
-    confusion = myevaluation.confusion_matrix(all_y_test,all_y_pred, labels=["yes","no"]) 
+    # confusion = myevaluation.confusion_matrix(all_y_test,all_y_pred, labels=["yes","no"]) 
    
-    return f1,p,r,accs,confusion
+    return f1,p,r,accs
+
+def pie_chart(labels,y,filename="temp.png",title="Pie Chart"):
+    total = sum(y)
+    plt.figure(figsize=(6,6))  # Makes a new Figure
+    wedges, texts, autotexts = plt.pie(y, labels=labels, autopct=lambda pct: f"{pct:.1f}%\n({int(round(pct/100.0*total))})", startangle=90
+    )
+    # Improve text sizes for readability
+    for t in texts:
+        t.set_fontsize(10)
+    for at in autotexts:
+        at.set_fontsize(9)
+    plt.title(title)
+    plt.tight_layout()  # Do this before showing or saving the chart
+    plt.savefig(filename)
+    plt.show()
+    
+
+
+def bar_chart(x,y, filename = "temp.png", title="Bar Chart", y_label="Y", x_label="X", x_ticks=None):
+    plt.figure(figsize=(10,5)) # Makes a new Figure
+    plt.bar(x,y)
+
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.title(title)
+    if x_ticks is not None:
+        plt.xticks(rotation=x_ticks[0],ha=x_ticks[1])
+    plt.tight_layout() # Do this before showing or saving the chart
+    plt.savefig(filename)
+    plt.show()
+    

@@ -16,10 +16,29 @@ def normalize_column(col):
     
     """
     new_col = []
+
+    min_val = min(col)
+    max_val = max(col)
+
     for x in col:
-        x = (x-min(col))/(max(col)-min(col))
+        x = (x-min_val)/(max_val-min_val)
         new_col.append(x)
     return new_col
+
+def normalize_table(X):
+     # Transpose X to get columns
+    columns = list(zip(*X))
+
+    normalized_cols = []
+    for col in columns:
+        # Normalize each column individually
+        normalized_col = normalize_column(col)
+        normalized_cols.append(normalized_col)
+
+    # Transpose back to get normalized rows
+    X_normalized = [list(row) for row in zip(*normalized_cols)]
+    
+    return X_normalized
 
 
 
